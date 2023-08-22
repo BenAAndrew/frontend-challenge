@@ -34,6 +34,8 @@ function ImageViewer(props: { src: string }) {
             const y = event.clientY - offsetTop;
             if (lastClick && lastClick.x === x && lastClick.y === y) {
                 setTagOverlay({ x: event.clientX, y: event.clientY });
+                setComment("");
+                setSelectedTag(undefined);
                 setTagPosition({ x, y });
             }
             setLastClick({ x, y });
@@ -76,6 +78,7 @@ function ImageViewer(props: { src: string }) {
                         position={tagOverlay}
                         comment={comment}
                         setComment={setComment}
+                        close={() => setTagOverlay(undefined)}
                         onSubmit={(comment: string) => addTag(comment)} 
                         tag={selectedTag}
                         onDelete={() => deleteTag()}
