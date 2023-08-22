@@ -16,9 +16,13 @@ function App() {
 
   return (
     <div className="App">
-      <ImageViewer src={`${url}/${images[currentImage]}`} />
-      <br/>
-      <Navigation index={currentImage} setIndex={setCurrentImage} totalItems={images.length}/>
+      {images.length > 0 &&
+        <>
+          <ImageViewer src={`${url}/${images[currentImage]}`} />
+          <br />
+          <Navigation index={currentImage} setIndex={setCurrentImage} totalItems={images.length} />
+        </>
+      }
     </div>
   );
 }
