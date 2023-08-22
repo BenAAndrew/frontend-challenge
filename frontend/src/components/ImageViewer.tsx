@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent, KeepScale } from "react-zoom-pan-pinch";
 import { isEqual } from 'lodash';
 import TagOverlay from "./TagOverlay";
@@ -26,6 +26,17 @@ function ImageViewer(props: { src: string }) {
     const [comment, setComment] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
     const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
+    const [imageSize, setImageSize] = useState<{ offsetLeft: number, offsetTop: number, width: number, height: number } | undefined>();
+
+    const handleResize = () => {
+        const { offsetLeft, offsetTop, width, height } = imageRef.current!;
+        setImageSize({ offsetLeft, offsetTop, width, height });
+    }
+
+    useEffect(() => {
+        handleResize();
+        window.addEventListener('resize', handleResize);
+    }, []);
 
     const clickHandler = (event: React.MouseEvent) => {
         if (imageRef.current) {
@@ -42,12 +53,17 @@ function ImageViewer(props: { src: string }) {
         }
     }
 
+    const getTagAbsolutePosition = (tag: Tag) => {
+        const x = Math.round((tag.x * imageSize!.width) + imageSize!.offsetLeft);
+        const y = Math.round((tag.y * imageSize!.height) + imageSize!.offsetTop);
+        return {x,y};
+    }
+
     const addTag = (comment: string) => {
-        const tag: Tag = {
-            x: tagPosition!.x,
-            y: tagPosition!.y,
-            comment
-        };
+        const { width, height } = imageRef.current!;
+        const x = tagPosition!.x / width;
+        const y = tagPosition!.y / height;
+        const tag: Tag = {x, y, comment};
         setTags([...tags, tag]);
         setComment("");
         setTagOverlay(undefined);
@@ -61,25 +77,22 @@ function ImageViewer(props: { src: string }) {
     }
 
     const selectTag = (tag: Tag) => {
-        if (imageRef.current) {
-            console.log("SELECT", tag)
-            const { offsetLeft, offsetTop } = imageRef.current;
-            setSelectedTag(tag);
-            setTagOverlay({ x: tag.x + offsetLeft, y: tag.y + offsetTop });
-            setComment(tag.comment);
-        }
+        const {x, y} = getTagAbsolutePosition(tag);
+        setSelectedTag(tag);
+        setTagOverlay({ x,y });
+        setComment(tag.comment);
     }
 
     return (
         <TransformWrapper doubleClick={{ disabled: true }}>
             {({ zoomIn, zoomOut, resetTransform, centerView, ...rest }) => (
                 <div>
-                    <TagOverlay 
+                    <TagOverlay
                         position={tagOverlay}
                         comment={comment}
                         setComment={setComment}
                         close={() => setTagOverlay(undefined)}
-                        onSubmit={(comment: string) => addTag(comment)} 
+                        onSubmit={(comment: string) => addTag(comment)}
                         tag={selectedTag}
                         onDelete={() => deleteTag()}
                     />
@@ -92,21 +105,24 @@ function ImageViewer(props: { src: string }) {
                         <div onClick={(e) => clickHandler(e)}>
                             <EventHandler onChange={() => setTagOverlay(undefined)} />
                             <img ref={imageRef} src={props.src} alt="image to caption" className="mx-auto w-3/5" />
-                            {tags.map((tag, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        position: "absolute",
-                                        top: `calc(-20px + ${tag.y}px)`,
-                                        left: `calc(375px + ${tag.x}px)`,
-                                        zIndex: 2,
-                                    }}
-                                >
-                                    <KeepScale>
-                                        <Pin tag={tag} onSelect={selectTag} />
-                                    </KeepScale>
-                                </div>
-                            ))}
+                            {tags.map((tag, i) => {
+                                const {x, y} = getTagAbsolutePosition(tag);
+                                return (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            position: "absolute",
+                                            top: `calc(-20px + ${y}px)`,
+                                            left: `calc(-8px + ${x}px)`,
+                                            zIndex: 2,
+                                        }}
+                                    >
+                                        <KeepScale>
+                                            <Pin tag={tag} onSelect={selectTag} />
+                                        </KeepScale>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </TransformComponent>
                     <br />
