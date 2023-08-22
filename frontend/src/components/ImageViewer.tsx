@@ -22,8 +22,6 @@ function ImageViewer(props: { src: string }) {
     const imageRef = useRef(null);
     const [lastClick, setLastClick] = useState<{ x: number, y: number } | undefined>();
     const [tagPosition, setTagPosition] = useState<{ x: number, y: number } | undefined>();
-    const [tagOverlay, setTagOverlay] = useState<{ x: number, y: number } | undefined>();
-    const [comment, setComment] = useState("");
     const [tags, setTags] = useState<Tag[]>([]);
     const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
     const [imageSize, setImageSize] = useState<{ offsetLeft: number, offsetTop: number, width: number, height: number } | undefined>();
@@ -40,12 +38,9 @@ function ImageViewer(props: { src: string }) {
 
     const clickHandler = (event: React.MouseEvent) => {
         if (imageRef.current) {
-            const { offsetLeft, offsetTop } = imageRef.current;
-            const x = event.clientX - offsetLeft;
-            const y = event.clientY - offsetTop;
+            const x = event.clientX;
+            const y = event.clientY;
             if (lastClick && lastClick.x === x && lastClick.y === y) {
-                setTagOverlay({ x: event.clientX, y: event.clientY });
-                setComment("");
                 setSelectedTag(undefined);
                 setTagPosition({ x, y });
             }
@@ -60,27 +55,24 @@ function ImageViewer(props: { src: string }) {
     }
 
     const addTag = (comment: string) => {
-        const { width, height } = imageRef.current!;
-        const x = tagPosition!.x / width;
-        const y = tagPosition!.y / height;
+        const { offsetLeft, offsetTop, width, height } = imageRef.current!;
+        const x = (tagPosition!.x - offsetLeft) / width;
+        const y = (tagPosition!.y - offsetTop) / height;
         const tag: Tag = {x, y, comment};
         setTags([...tags, tag]);
-        setComment("");
-        setTagOverlay(undefined);
+        setTagPosition(undefined);
     }
 
     const deleteTag = () => {
         setTags(tags.filter(tag => !isEqual(tag, selectedTag)));
         setSelectedTag(undefined);
-        setComment("");
-        setTagOverlay(undefined);
+        setTagPosition(undefined);
     }
 
     const selectTag = (tag: Tag) => {
         const {x, y} = getTagAbsolutePosition(tag);
         setSelectedTag(tag);
-        setTagOverlay({ x,y });
-        setComment(tag.comment);
+        setTagPosition({ x, y });
     }
 
     return (
@@ -88,10 +80,8 @@ function ImageViewer(props: { src: string }) {
             {({ zoomIn, zoomOut, resetTransform, centerView, ...rest }) => (
                 <div>
                     <TagOverlay
-                        position={tagOverlay}
-                        comment={comment}
-                        setComment={setComment}
-                        close={() => setTagOverlay(undefined)}
+                        position={tagPosition}
+                        close={() => setTagPosition(undefined)}
                         onSubmit={(comment: string) => addTag(comment)}
                         tag={selectedTag}
                         onDelete={() => deleteTag()}
@@ -103,8 +93,8 @@ function ImageViewer(props: { src: string }) {
                         maxHeight: "calc(100vh - 100px)",
                     }}>
                         <div onClick={(e) => clickHandler(e)}>
-                            <EventHandler onChange={() => setTagOverlay(undefined)} />
-                            <img ref={imageRef} src={props.src} alt="image to caption" className="mx-auto w-3/5" />
+                            <EventHandler onChange={() => setTagPosition(undefined)} />
+                            <img ref={imageRef} src={props.src} onLoad={() => handleResize()} alt="image to caption" className="mx-auto w-3/5" />
                             {tags.map((tag, i) => {
                                 const {x, y} = getTagAbsolutePosition(tag);
                                 return (

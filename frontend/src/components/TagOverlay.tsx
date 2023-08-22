@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tag } from "./ImageViewer";
 
 
-function TagOverlay(props: { position: { x: number, y: number } | undefined, comment: string, close: Function, setComment: Function, onSubmit: Function, onDelete: Function, tag: Tag | undefined }) {
+function TagOverlay(props: { position: { x: number, y: number } | undefined, close: Function, onSubmit: Function, onDelete: Function, tag: Tag | undefined }) {
+    const [comment, setComment] = useState("");
+
+    useEffect(() => {
+        if(props.tag){
+            setComment(props.tag.comment);
+        } else {
+            setComment("");
+        }
+    }, [props.tag]);
+    
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
-        props.onSubmit(props.comment);
+        props.onSubmit(comment);
     }
 
     return (
@@ -19,7 +29,7 @@ function TagOverlay(props: { position: { x: number, y: number } | undefined, com
                         <label className="-mt-5 block text-gray-700 text-sm font-bold mb-2" htmlFor="comment">
                             Comment 
                         </label>
-                        <input onChange={(e) => props.setComment(e.target.value)} value={props.comment} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comment" type="text" placeholder="Comment" required/>
+                        <input onChange={(e) => setComment(e.target.value)} value={comment} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comment" type="text" placeholder="Comment" required/>
                     </div>
                     <div className="flex items-center">
                         <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
