@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent, KeepScale } from "react-zoom-pan-pinch";
-import { isEqual } from 'lodash';
 import TagOverlay from "./TagOverlay";
 import EventHandler from "./EventHandler";
 import Pin from "./Pin";
+import { Tag } from "../types";
 
 
 function ActionButton(props: { action: Function; children: string }) {
@@ -11,18 +11,10 @@ function ActionButton(props: { action: Function; children: string }) {
 }
 
 
-export type Tag = {
-    x: number;
-    y: number;
-    comment: string;
-};
-
-
-function ImageViewer(props: { src: string }) {
+function ImageViewer(props: { src: string, tags: Tag[], addTag: Function, deleteTag: Function }) {
     const imageRef = useRef(null);
     const [lastClick, setLastClick] = useState<{ x: number, y: number } | undefined>();
     const [tagPosition, setTagPosition] = useState<{ x: number, y: number } | undefined>();
-    const [tags, setTags] = useState<Tag[]>([]);
     const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
     const [imageSize, setImageSize] = useState<{ offsetLeft: number, offsetTop: number, width: number, height: number } | undefined>();
 
@@ -59,12 +51,12 @@ function ImageViewer(props: { src: string }) {
         const x = (tagPosition!.x - offsetLeft) / width;
         const y = (tagPosition!.y - offsetTop) / height;
         const tag: Tag = {x, y, comment};
-        setTags([...tags, tag]);
+        props.addTag(tag);
         setTagPosition(undefined);
     }
 
     const deleteTag = () => {
-        setTags(tags.filter(tag => !isEqual(tag, selectedTag)));
+        props.deleteTag(selectedTag);
         setSelectedTag(undefined);
         setTagPosition(undefined);
     }
@@ -95,7 +87,7 @@ function ImageViewer(props: { src: string }) {
                         <div onClick={(e) => clickHandler(e)}>
                             <EventHandler onChange={() => setTagPosition(undefined)} />
                             <img ref={imageRef} src={props.src} onLoad={() => handleResize()} alt="image to caption" className="mx-auto w-3/5" />
-                            {tags.map((tag, i) => {
+                            {props.tags.map((tag, i) => {
                                 const {x, y} = getTagAbsolutePosition(tag);
                                 return (
                                     <div
@@ -113,6 +105,7 @@ function ImageViewer(props: { src: string }) {
                                     </div>
                                 )
                             })}
+                            Double click on the image to add a tag
                         </div>
                     </TransformComponent>
                     <br />

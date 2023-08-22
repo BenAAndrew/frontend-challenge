@@ -1,6 +1,6 @@
 import React from "react";
 import { ReactComponent as PinSVG } from "./pin.svg";
-import { Tag } from "./ImageViewer";
+import { Tag } from "../types";
 
 function Pin(props: {tag: Tag, onSelect: Function}) {
     return (

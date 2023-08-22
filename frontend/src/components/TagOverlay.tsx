@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Tag } from "./ImageViewer";
+import { Tag } from "../types";
 
 
 function TagOverlay(props: { position: { x: number, y: number } | undefined, close: Function, onSubmit: Function, onDelete: Function, tag: Tag | undefined }) {
@@ -15,14 +15,20 @@ function TagOverlay(props: { position: { x: number, y: number } | undefined, clo
     
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
+        setComment("");
         props.onSubmit(comment);
+    }
+
+    function handleClose() {
+        setComment("");
+        props.close();
     }
 
     return (
         props.position ?
             <div className="w-fit z-10" style={{position: "absolute", marginLeft: `${props.position.x}px`, marginTop: `${props.position.y}px`}}>
                 <form className="bg-white shadow-md rounded px-4 py-4 mb-4 flex flex-col items-center" onSubmit={handleSubmit}>
-                    <button onClick={() => props.close()} className="z-20 ml-44 bg-gray-500 hover:bg-gray-700 text-white font-bold px-2 rounded focus:outline-none focus:shadow-outline ml-2">
+                    <button onClick={() => handleClose()} className="z-20 ml-44 bg-gray-500 hover:bg-gray-700 text-white font-bold px-2 rounded focus:outline-none focus:shadow-outline ml-2">
                         x
                     </button>
                     <div className="mb-4">
