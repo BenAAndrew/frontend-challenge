@@ -1,24 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import ImageViewer from './components/ImageViewer';
+
+
+const url = "http://localhost:8000/images";
 
 function App() {
+  const [images, setImages] = useState([]);
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+    fetch(url).then((response) => response.json()).then((data) => setImages(data.map((img: { file_stem: string }) => img.file_stem)));
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <ImageViewer src={`${url}/${images[currentImage]}`} />
     </div>
   );
 }
