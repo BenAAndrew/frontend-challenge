@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import ImageViewer from './components/ImageViewer';
+import Navigation from './components/Navigation';
 
 
 const url = "http://localhost:8000/images";
@@ -16,6 +17,8 @@ function App() {
   return (
     <div className="App">
       <ImageViewer src={`${url}/${images[currentImage]}`} />
+      <br/>
+      <Navigation index={currentImage} setIndex={setCurrentImage} totalItems={images.length}/>
     </div>
   );
 }
