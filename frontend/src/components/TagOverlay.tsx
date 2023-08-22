@@ -1,12 +1,11 @@
 import React, { useState } from "react";
+import { Tag } from "./ImageViewer";
 
 
-function TagOverlay(props: { position: { x: number, y: number } | undefined, onSubmit: Function }) {
-    const [comment, setComment] = useState("");
-
+function TagOverlay(props: { position: { x: number, y: number } | undefined, comment: string, setComment: Function, onSubmit: Function, onDelete: Function, tag: Tag | undefined }) {
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
-        props.onSubmit(comment);
+        props.onSubmit(props.comment);
     }
 
     return (
@@ -17,12 +16,17 @@ function TagOverlay(props: { position: { x: number, y: number } | undefined, onS
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="comment">
                             Comment 
                         </label>
-                        <input onChange={(e) => setComment(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comment" type="text" placeholder="Comment" required/>
+                        <input onChange={(e) => props.setComment(e.target.value)} value={props.comment} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comment" type="text" placeholder="Comment" required/>
                     </div>
                     <div className="flex items-center">
                         <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                             Submit
                         </button>
+                        {props.tag && 
+                            <button onClick={() => props.onDelete()} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
+                                Delete
+                            </button>
+                        }
                     </div>
                 </form>
             </div>
