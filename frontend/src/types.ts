@@ -1,5 +1,5 @@
 export type Tag = {
-    x: number;
-    y: number;
-    comment: string;
+  x: number;
+  y: number;
+  comment: string;
 };
